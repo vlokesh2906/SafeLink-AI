@@ -13,7 +13,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 app = Flask(__name__)
 
 # Initialize Groq client
-GROQ_API_KEY = "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"
+GROQ_API_KEY = "your groq api key"
 groq_client = Groq(api_key=GROQ_API_KEY)
 
 # Load the ML model
