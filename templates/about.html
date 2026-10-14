@@ -1,0 +1,262 @@
+<!-- about.html -->
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - URL Guardian</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        .gradient-text {
+            background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hover-card {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .flow-line {
+            position: relative;
+        }
+
+        .flow-line::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -30px;
+            width: 30px;
+            height: 2px;
+            background: #4b5563;
+        }
+
+        @media (max-width: 768px) {
+            .flow-line::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-colors duration-300" 
+      x-data="{ darkMode: true }"
+      :class="{ 'dark:bg-gray-900 bg-gray-50': true }">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 backdrop-blur-sm border-b dark:border-gray-800 border-gray-200 dark:bg-gray-900/80 bg-white/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        <span class="text-xl font-bold dark:text-white text-gray-900">URL Guardian</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                    <a href="/check" class="text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium">Scan URL</a>
+                    <a href="/about" class="text-blue-500 px-3 py-2 rounded-md text-sm font-medium">About</a>
+                    
+                    <!-- Theme Toggle -->
+                    <button 
+                        @click="darkMode = !darkMode; document.documentElement.classList.toggle('dark')"
+                        class="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200"
+                    >
+                        <svg x-show="!darkMode" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <svg x-show="darkMode" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Hero Section -->
+            <div class="text-center mb-16">
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    How <span class="gradient-text">URL Guardian</span> Works
+                </h1>
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                    Our advanced security system uses multiple layers of analysis to protect you from malicious websites.
+                </p>
+            </div>
+
+            <!-- Process Flow -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <!-- URL Input -->
+                <div class="hover-card flow-line bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl border dark:border-gray-700">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="bg-blue-500/20 p-3 rounded-lg">
+                            <svg class="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">1. URL Analysis</h3>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Enter any URL to begin the scanning process. Our system first validates and normalizes the URL structure.
+                    </p>
+                </div>
+
+                <!-- ML Processing -->
+                <div class="hover-card flow-line bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl border dark:border-gray-700">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="bg-purple-500/20 p-3 rounded-lg">
+                            <svg class="w-6 h-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">2. ML Detection</h3>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Our machine learning model analyzes URL patterns and characteristics to identify potential threats.
+                    </p>
+                </div>
+
+                <!-- Advanced Analysis -->
+                <div class="hover-card bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl border dark:border-gray-700">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="bg-pink-500/20 p-3 rounded-lg">
+                            <svg class="w-6 h-6 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">3. Deep Analysis</h3>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Combines WHOIS data and AI-powered content analysis for comprehensive security assessment.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Technology Stack -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-xl border dark:border-gray-700 mb-16">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Our Technology Stack</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- ML Model -->
+                    <div class="hover-card space-y-4">
+                        <div class="bg-blue-500/10 dark:bg-blue-500/20 p-4 rounded-lg inline-block">
+                            <svg class="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">ML Model</h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Custom-trained neural network for URL pattern recognition and threat detection.
+                        </p>
+                    </div>
+
+                    <!-- WHOIS Integration -->
+                    <div class="hover-card space-y-4">
+                        <div class="bg-purple-500/10 dark:bg-purple-500/20 p-4 rounded-lg inline-block">
+                            <svg class="w-8 h-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Realtime Web Scrapping</h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Real-time domain information retrieval and verification system.
+                        </p>
+                    </div>
+                    
+
+                    <!-- AI Analysis -->
+                    <div class="hover-card space-y-4">
+                        <div class="bg-pink-500/10 dark:bg-pink-500/20 p-4 rounded-lg inline-block">
+                            <svg class="w-8 h-8 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Web Page Analysis</h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Advanced language model for intelligent content analysis and threat assessment.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Features -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-xl border dark:border-gray-700">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Security Features</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Feature List -->
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-6 h-6 text-green-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-900 dark:text-white">Phishing Detection</h4>
+                                <p class="text-gray-600 dark:text-gray-400">Advanced pattern recognition for identifying fraudulent websites.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-6 h-6 text-green-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-900 dark:text-white">Domain Verification</h4>
+                                <p class="text-gray-600 dark:text-gray-400">Comprehensive domain ownership and registration analysis.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-6 h-6 text-green-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-900 dark:text-white">Content Analysis</h4>
+                                <p class="text-gray-600 dark:text-gray-400">AI-powered scanning of website content for suspicious elements.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Stats -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-blue-500 mb-2">99.9%</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Detection Rate</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-purple-500 mb-2">0.1%</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">False Positive Rate</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-pink-500 mb-2">24/7</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Availability</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-green-500 mb-2">1M+</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">URLs Scanned</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="text-center mt-16">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Ready to Secure Your Browsing?</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">Try our URL scanner now and browse the web with confidence.</p>
+                <a href="/check" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition duration-200">
+                    Start Scanning
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

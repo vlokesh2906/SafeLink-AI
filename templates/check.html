@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Scanner - URL Guardian</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        /* Base Animations */
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .gradient-animation {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        /* Card Effects */
+        .result-card {
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* AI Analysis Styles */
+        .ai-insights {
+            @apply space-y-6;
+        }
+
+        .ai-insights h3 {
+            @apply text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2 mb-4;
+        }
+
+        .ai-insights ul {
+            @apply space-y-3 list-none;
+        }
+
+        .ai-insights li {
+            @apply flex items-start space-x-3 text-gray-700 dark:text-gray-300;
+        }
+
+        .ai-insights-section {
+            @apply bg-gray-50 dark:bg-gray-900 rounded-lg p-6 transition-all duration-300 hover:transform hover:-translate-y-1 hover:shadow-lg;
+        }
+
+        /* Analysis Section Styles */
+        .analysis-section {
+            @apply bg-gray-50 dark:bg-gray-900 rounded-lg p-4 transition-all duration-300;
+        }
+
+        .analysis-section:hover {
+            @apply transform -translate-y-1 shadow-lg;
+        }
+
+        .section-title {
+            @apply text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center;
+        }
+
+        .analysis-list {
+            @apply space-y-2 list-none;
+        }
+
+        .analysis-list li {
+            @apply flex items-start space-x-2 text-gray-700 dark:text-gray-300 pl-6 relative;
+        }
+
+        .analysis-list li::before {
+            content: "•";
+            @apply absolute left-2 text-blue-500;
+        }
+
+        /* Emoji and Icon Styles */
+        .emoji-icon {
+            @apply text-2xl mr-2 flex-shrink-0;
+        }
+
+        /* Section Borders */
+        .purpose-section {
+            @apply border-l-4 border-blue-500 pl-4;
+        }
+
+        .security-section {
+            @apply border-l-4 border-green-500 pl-4;
+        }
+
+        .warning-section {
+            @apply border-l-4 border-yellow-500 pl-4;
+        }
+
+        .recommendation-section {
+            @apply border-l-4 border-purple-500 pl-4;
+        }
+
+        /* Loading Animations */
+        .scanning-pulse {
+            animation: scanning-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes scanning-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .insights-loading {
+            @apply flex items-center justify-center p-8;
+        }
+
+        .insights-loading-spinner {
+            @apply animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500;
+        }
+
+        /* Progress Bar */
+        .progress-bar-animation {
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* Error Styles */
+        .error-container {
+            @apply bg-red-50 dark:bg-red-900/20 rounded-lg p-4 mt-4;
+        }
+
+        .error-title {
+            @apply text-lg font-semibold text-red-700 dark:text-red-400 mb-2;
+        }
+
+        .error-message {
+            @apply text-red-600 dark:text-red-300;
+        }
+
+        /* WHOIS Data Styles */
+        .whois-item {
+            @apply transition-all duration-300;
+        }
+
+        .whois-item:hover {
+            @apply bg-gray-50 dark:bg-gray-800 rounded-lg;
+        }
+
+        .whois-icon {
+            @apply text-2xl mr-2;
+        }
+
+        /* Technical Terms Tooltip */
+        .tech-term {
+            @apply relative cursor-help border-b border-dotted border-gray-400;
+        }
+
+        .tech-term:hover::after {
+            content: attr(data-tooltip);
+            @apply absolute bottom-full left-1/2 transform -translate-x-1/2 px-3 py-1 bg-gray-900 text-white text-xs rounded mb-2 whitespace-normal max-w-xs z-50;
+        }
+
+        /* Status Badge Animations */
+        .status-badge {
+            @apply transition-all duration-300;
+        }
+
+        .status-badge:hover {
+            @apply transform scale-105;
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-colors duration-300" 
+      x-data="scannerApp()"
+      :class="{ 'dark:bg-gray-900 bg-gray-50': true }">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 backdrop-blur-sm border-b dark:border-gray-800 border-gray-200 dark:bg-gray-900/80 bg-white/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo and Brand -->
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-3 group">
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                             class="h-8 w-8 text-blue-500 transition-transform duration-300 group-hover:scale-110" 
+                             fill="none" 
+                             viewBox="0 0 24 24" 
+                             stroke="currentColor">
+                            <path stroke-linecap="round" 
+                                  stroke-linejoin="round" 
+                                  stroke-width="2" 
+                                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        <span class="text-xl font-bold dark:text-white text-gray-900 transition-colors duration-300">
+                            URL Guardian
+                        </span>
+                    </a>
+                </div>
+
+                <!-- Navigation Links and Theme Toggle -->
+                <div class="flex items-center space-x-4">
+                    <a href="/" 
+                       class="text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                        Home
+                    </a>
+                    <a href="/check" 
+                       class="text-blue-500 px-3 py-2 rounded-md text-sm font-medium relative">
+                        Scan URL
+                        <span class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-100"></span>
+                    </a>
+                    <a href="/about" 
+                       class="text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                        About
+                    </a>
+                    
+                    <!-- Theme Toggle -->
+                    <button 
+                        @click="darkMode = !darkMode; document.documentElement.classList.toggle('dark')"
+                        class="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-all duration-200 transform hover:scale-105"
+                        aria-label="Toggle theme"
+                    >
+                        <svg x-show="!darkMode" 
+                             xmlns="http://www.w3.org/2000/svg" 
+                             class="h-5 w-5 text-gray-600" 
+                             fill="none" 
+                             viewBox="0 0 24 24" 
+                             stroke="currentColor">
+                            <path stroke-linecap="round" 
+                                  stroke-linejoin="round" 
+                                  stroke-width="2" 
+                                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <svg x-show="darkMode" 
+                             xmlns="http://www.w3.org/2000/svg" 
+                             class="h-5 w-5 text-yellow-400" 
+                             fill="none" 
+                             viewBox="0 0 24 24" 
+                             stroke="currentColor">
+                            <path stroke-linecap="round" 
+                                  stroke-linejoin="round" 
+                                  stroke-width="2" 
+                                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- URL Input Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl border dark:border-gray-700 transform transition-all duration-300 hover:shadow-2xl">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center group">
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                         class="h-7 w-7 mr-3 text-blue-500 transform transition-transform duration-300 group-hover:scale-110" 
+                         fill="none" 
+                         viewBox="0 0 24 24" 
+                         stroke="currentColor">
+                        <path stroke-linecap="round" 
+                              stroke-linejoin="round" 
+                              stroke-width="2" 
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Scan URL for Security Threats
+                    <span class="ml-3 text-sm font-normal text-gray-500 dark:text-gray-400">
+                        Powered by AI Security Analysis
+                    </span>
+                </h2>
+
+                <!-- URL Input Form -->
+                <div class="space-y-4">
+                    <div class="relative">
+                        <div class="relative group">
+                            <div class="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                            <div class="relative">
+                                <input 
+                                    type="text" 
+                                    x-model="url"
+                                    placeholder="Enter URL (e.g., https://example.com, www.example.com, or example.com)"
+                                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 pl-12"
+                                    :class="{'border-red-500': error}"
+                                    @keyup.enter="scanURL"
+                                >
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                         class="h-6 w-6 text-gray-400 transition-colors duration-200" 
+                                         fill="none" 
+                                         viewBox="0 0 24 24" 
+                                         stroke="currentColor">
+                                        <path stroke-linecap="round" 
+                                              stroke-linejoin="round" 
+                                              stroke-width="2" 
+                                              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- URL Input Helper Text -->
+                        <div class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" 
+                                 class="h-4 w-4" 
+                                 fill="none" 
+                                 viewBox="0 0 24 24" 
+                                 stroke="currentColor">
+                                <path stroke-linecap="round" 
+                                      stroke-linejoin="round" 
+                                      stroke-width="2" 
+                                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Supports all URL formats: HTTPS, HTTP, with or without www</span>
+                        </div>
+
+                        <!-- Error Message -->
+                        <div x-show="error" 
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 transform -translate-y-2"
+                             x-transition:enter-end="opacity-100 transform translate-y-0"
+                             class="mt-2 text-red-500 text-sm flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" 
+                                 class="h-4 w-4" 
+                                 fill="none" 
+                                 viewBox="0 0 24 24" 
+                                 stroke="currentColor">
+                                <path stroke-linecap="round" 
+                                      stroke-linejoin="round" 
+                                      stroke-width="2" 
+                                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <span x-text="error"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Scan Button -->
+                    <button 
+                        @click="scanURL"
+                        class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        :disabled="isScanning"
+                    >
+                        <template x-if="!isScanning">
+                            <div class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" 
+                                     class="h-5 w-5 animate-pulse" 
+                                     fill="none" 
+                                     viewBox="0 0 24 24" 
+                                     stroke="currentColor">
+                                    <path stroke-linecap="round" 
+                                          stroke-linejoin="round" 
+                                          stroke-width="2" 
+                                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <span>Scan URL</span>
+                            </div>
+                        </template>
+                        <template x-if="isScanning">
+                            <div class="flex items-center space-x-3">
+                                <svg class="animate-spin h-5 w-5 text-white" 
+                                     xmlns="http://www.w3.org/2000/svg" 
+                                     fill="none" 
+                                     viewBox="0 0 24 24">
+                                    <circle class="opacity-25" 
+                                            cx="12" 
+                                            cy="12" 
+                                            r="10" 
+                                            stroke="currentColor" 
+                                            stroke-width="4">
+                                    </circle>
+                                    <path class="opacity-75" 
+                                          fill="currentColor" 
+                                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                                <span>Analyzing Security...</span>
+                                <span x-text="countdown + 's'" 
+                                      class="text-sm bg-white/20 px-2 py-1 rounded-full">
+                                </span>
+                            </div>
+                        </template>
+                    </button>
+                </div>
+            </div>
+            <!-- Scanning Progress -->
+            <div x-show="isScanning" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform translate-y-4"
+                 x-transition:enter-end="opacity-100 transform translate-y-0"
+                 class="mt-8">
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl border dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Scanning Progress
+                    </h3>
+                    <div class="space-y-6">
+                        <!-- ML Analysis -->
+                        <div class="relative">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-4 h-4 rounded-full transition-colors duration-300" 
+                                     :class="scanningStage === 'ml' ? 'bg-blue-500 animate-pulse' : 'bg-gray-300 dark:bg-gray-600'"></div>
+                                <span class="text-gray-700 dark:text-gray-300 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    ML Security Analysis
+                                </span>
+                            </div>
+                            <div x-show="scanningStage === 'ml'" 
+                                 class="mt-2 ml-7 text-sm text-gray-500 dark:text-gray-400">
+                                Analyzing URL patterns and security indicators...
+                            </div>
+                        </div>
+                        
+                        <!-- WHOIS Lookup -->
+                        <div class="relative">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-4 h-4 rounded-full transition-colors duration-300" 
+                                     :class="scanningStage === 'whois' ? 'bg-purple-500 animate-pulse' : 'bg-gray-300 dark:bg-gray-600'"></div>
+                                <span class="text-gray-700 dark:text-gray-300 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                    </svg>
+                                    Domain Verification
+                                </span>
+                            </div>
+                            <div x-show="scanningStage === 'whois'" 
+                                 class="mt-2 ml-7 text-sm text-gray-500 dark:text-gray-400">
+                                Fetching domain registration and ownership details...
+                            </div>
+                        </div>
+                        
+                        <!-- Content Analysis -->
+                        <div class="relative">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-4 h-4 rounded-full transition-colors duration-300" 
+                                     :class="scanningStage === 'content' ? 'bg-pink-500 animate-pulse' : 'bg-gray-300 dark:bg-gray-600'"></div>
+                                <span class="text-gray-700 dark:text-gray-300 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                    AI Content Analysis
+                                </span>
+                            </div>
+                            <div x-show="scanningStage === 'content'" 
+                                 class="mt-2 ml-7 text-sm text-gray-500 dark:text-gray-400">
+                                Performing deep content analysis with AI...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div x-show="showResults" 
+                 x-cloak
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform translate-y-4"
+                 x-transition:enter-end="opacity-100 transform translate-y-0"
+                 class="mt-8 space-y-6">
+                
+                <!-- ML Detection Results -->
+                <div class="result-card bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl border dark:border-gray-700">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            Security Analysis
+                        </h3>
+                        <div x-show="results?.prediction" 
+                             :class="{
+                                'bg-green-500/20 text-green-400': results?.prediction?.status === 'SAFE',
+                                'bg-red-500/20 text-red-400': results?.prediction?.status === 'MALICIOUS'
+                             }" 
+                             class="px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2 status-badge">
+                            <template x-if="results?.prediction?.status === 'SAFE'">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </template>
+                            <template x-if="results?.prediction?.status === 'MALICIOUS'">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </template>
+                            <span x-text="results?.prediction?.status"></span>
+                        </div>
+                    </div>
+                    <!-- Protocol Safety -->
+                    <div class="mb-6 p-4 rounded-lg" 
+                         :class="{
+                             'bg-green-50 dark:bg-green-900/10': results?.prediction?.status === 'SAFE',
+                             'bg-red-50 dark:bg-red-900/10': results?.prediction?.status === 'MALICIOUS'
+                         }"
+                         x-show="results?.prediction?.protocol_safety">
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0" x-show="results?.prediction?.status === 'SAFE'">
+                                <svg class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                            </div>
+                            <div class="flex-shrink-0" x-show="results?.prediction?.status === 'MALICIOUS'">
+                                <svg class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium" 
+                                   :class="{
+                                       'text-green-800 dark:text-green-400': results?.prediction?.status === 'SAFE',
+                                       'text-red-800 dark:text-red-400': results?.prediction?.status === 'MALICIOUS'
+                                   }"
+                                   x-text="results?.prediction?.protocol_safety">
+                                </p>
+                                <p class="mt-1 text-sm" 
+                                   :class="{
+                                       'text-green-700 dark:text-green-300': results?.prediction?.status === 'SAFE',
+                                       'text-red-700 dark:text-red-300': results?.prediction?.status === 'MALICIOUS'
+                                   }"
+                                   x-text="results?.prediction?.protocol_details">
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Confidence Score -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Confidence Score</span>
+                            <span class="text-sm font-bold" 
+                                  :class="{
+                                      'text-green-500': results?.prediction?.status === 'SAFE',
+                                      'text-red-500': results?.prediction?.status === 'MALICIOUS'
+                                  }"
+                                  x-text="results?.prediction?.confidence || '0%'">
+                            </span>
+                        </div>
+                        <div class="relative">
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                                <div class="transition-all duration-1000 ease-out h-2.5 rounded-full"
+                                     :class="{
+                                         'bg-green-500': results?.prediction?.status === 'SAFE',
+                                         'bg-red-500': results?.prediction?.status === 'MALICIOUS'
+                                     }"
+                                     :style="`width: ${results?.prediction?.confidence?.replace('%', '') || 0}%`">
+                                </div>
+                            </div>
+                            <div class="absolute -bottom-6 left-0 w-full flex justify-between text-xs text-gray-500">
+                                <span>0%</span>
+                                <span>50%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WHOIS Data -->
+                <div x-show="results?.whois_data" 
+                     class="result-card bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl border dark:border-gray-700">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                        </svg>
+                        Domain Information
+                        <span class="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                            WHOIS Data
+                        </span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <template x-for="(info, key) in results.whois_data" :key="key">
+                            <div class="whois-item p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300">
+                                <div class="flex items-start space-x-3">
+                                    <span class="whois-icon" x-text="info.icon"></span>
+                                    <div class="flex-1 space-y-1">
+                                        <div class="font-medium text-gray-900 dark:text-white" x-text="info.label"></div>
+                                        <div class="text-gray-600 dark:text-gray-400" x-text="info.value || 'N/A'"></div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-500" x-text="info.description"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Content Analysis Button -->
+                <div x-show="showResults && !showInsights" 
+                     class="text-center"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform translate-y-4"
+                     x-transition:enter-end="opacity-100 transform translate-y-0">
+                    <button 
+                        @click="getContentAnalysis"
+                        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-all duration-300 transform hover:scale-105"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Analyze Content
+                        <span class="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full">AI Powered</span>
+                    </button>
+                </div>
+                <!-- AI Insights Section -->
+                <div x-show="showInsights" 
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform translate-y-4"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     class="result-card bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl border dark:border-gray-700">
+                    
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            AI Security Insights
+                            <span class="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                                Realtime Webpage Analysis
+                            </span>
+                        </h3>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div x-show="!results.insights" class="insights-loading">
+                        <div class="flex flex-col items-center space-y-4">
+                            <div class="insights-loading-spinner"></div>
+                            <p class="text-gray-500 dark:text-gray-400">Analyzing website content...</p>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div x-show="results.insights" 
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         class="ai-insights prose prose-sm dark:prose-invert max-w-none text-gray-900 dark:text-gray-100">
+                        <div x-html="formatInsights(results.insights)" class="space-y-6"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript Implementation -->
+    <script>
+        function scannerApp() {
+            return {
+                url: '',
+                error: '',
+                isScanning: false,
+                showResults: false,
+                showInsights: false,
+                results: null,
+                countdown: 5,
+                scanningStage: '',
+                darkMode: true,
+
+                // Initialize the application
+                init() {
+                    this.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    this.results = {
+                        prediction: { 
+                            confidence: '0%', 
+                            status: '',
+                            protocol_safety: '',
+                            protocol_details: ''
+                        },
+                        whois_data: null,
+                        insights: ''
+                    };
+
+                    // Listen for system theme changes
+                    window.matchMedia('(prefers-color-scheme: dark)')
+                        .addEventListener('change', e => this.darkMode = e.matches);
+                },
+
+                // URL validation with improved feedback
+                validateURL(url) {
+                    if (!url) {
+                        this.error = 'Please enter a URL to scan';
+                        return false;
+                    }
+                    
+                    const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+                    if (!urlPattern.test(url)) {
+                        this.error = 'Please enter a valid website URL';
+                        return false;
+                    }
+
+                    this.error = '';
+                    return true;
+                },
+
+                // Main scanning function with enhanced feedback
+                async scanURL() {
+                    if (!this.validateURL(this.url)) return;
+
+                    this.isScanning = true;
+                    this.showResults = false;
+                    this.showInsights = false;
+                    this.countdown = 5;
+                    this.error = '';
+                    
+                    const countdownInterval = setInterval(() => {
+                        this.countdown--;
+                        if (this.countdown <= 0) clearInterval(countdownInterval);
+                    }, 1000);
+
+                    try {
+                        // Scanning stages with realistic timing
+                        this.scanningStage = 'ml';
+                        await new Promise(r => setTimeout(r, 1000));
+                        
+                        this.scanningStage = 'whois';
+                        await new Promise(r => setTimeout(r, 1500));
+                        
+                        this.scanningStage = 'content';
+                        await new Promise(r => setTimeout(r, 1500));
+
+                        const response = await fetch('/analyze', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `url=${encodeURIComponent(this.url)}`
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        
+                        this.results = {
+                            prediction: {
+                                ...data.prediction,
+                                confidence: data.prediction?.confidence || '0%',
+                                status: data.prediction?.status || 'Unknown',
+                                protocol_safety: data.prediction?.protocol_safety || '',
+                                protocol_details: data.prediction?.protocol_details || ''
+                            },
+                            whois_data: data.whois_data || null,
+                            insights: ''
+                        };
+
+                        this.showResults = true;
+                        
+                        // Smooth scroll to results
+                        setTimeout(() => {
+                            document.querySelector('.result-card')?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'nearest'
+                            });
+                        }, 100);
+                        
+                    } catch (error) {
+                        console.error('Scanning error:', error);
+                        this.error = 'An error occurred while scanning the URL. Please try again.';
+                    } finally {
+                        clearInterval(countdownInterval);
+                        this.isScanning = false;
+                        this.scanningStage = '';
+                    }
+                },
+
+                // Enhanced insights formatting
+                formatInsights(html) {
+                    if (!html) return '';
+                    
+                    // Add dark mode text color classes
+                    html = html.replace(
+                        /<div class="analysis-section">/g, 
+                        '<div class="analysis-section text-gray-900 dark:text-gray-100">'
+                    );
+
+                    // Add dark mode text color to paragraphs
+                    html = html.replace(
+                        /<p>/g,
+                        '<p class="text-gray-700 dark:text-gray-300">'
+                    );
+
+                    // Rest of the formatting...
+                    html = html.replace(
+                        /(🎯|🛡️|⚠️|💡)/g,
+                        '<span class="emoji-icon">$1</span>'
+                    );
+
+                    return html;
+                },
+
+                // Content analysis with loading state
+                async getContentAnalysis() {
+                    this.showInsights = true;
+                    if (this.results.insights) return;
+
+                    try {
+                        this.scanningStage = 'content';
+                        const response = await fetch('/analyze', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `url=${encodeURIComponent(this.url)}&analysis_only=true`
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        
+                        // Add slight delay for better UX
+                        await new Promise(r => setTimeout(r, 500));
+                        this.results.insights = data.insights;
+                        
+                        // Scroll to insights
+                        setTimeout(() => {
+                            document.querySelector('.ai-insights')?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'nearest'
+                            });
+                        }, 100);
+                    } catch (error) {
+                        console.error('Content analysis error:', error);
+                        this.results.insights = `
+                            <div class="error-container">
+                                <h3 class="error-title">❌ Error Analyzing Content</h3>
+                                <p class="error-message">Unable to analyze website content. Please try again.</p>
+                            </div>
+                        `;
+                    } finally {
+                        this.scanningStage = '';
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
