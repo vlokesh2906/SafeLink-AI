@@ -1,0 +1,7 @@
+install flask
+install tensorflow
+install numpy
+install requestsc
+install beautifulsoup4
+install groq
+install urllib3
